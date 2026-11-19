@@ -1,0 +1,69 @@
+<div id="app">
+  <template v-if="loading">
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading data...</span>
+      </div>
+    </div>
+  </template>
+
+  <template v-else>
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-gear me-1"></i> Settings</span>
+        <button class="btn btn-primary btn-sm" @click="addSetting">
+          <i class="bi bi-plus-lg me-1"></i>Add Setting
+        </button>
+      </div>
+
+      <div class="card-body border-bottom">
+        <div class="row g-2">
+          <div class="col-md-4">
+            <input v-model="filters.key" type="text" class="form-control form-control-sm"
+              placeholder="Filter by key (exact match)" @keyup.enter="loadSettings">
+          </div>
+          <div class="col-md-2">
+            <button class="btn btn-outline-secondary btn-sm" @click="loadSettings">
+              <i class="bi bi-funnel me-1"></i>Filter
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="settings.length === 0" class="card-body text-muted">
+        No settings found.
+      </div>
+      <div v-else class="list-group list-group-flush">
+        <div v-for="setting in settings" :key="setting.id" class="list-group-item">
+          <div class="row align-items-center g-2">
+            <div class="col-md-4">
+              <label class="form-label mb-0 fw-semibold">{{ settingLabel(setting.key) }}</label>
+              <div class="text-muted small"><code>{{ setting.key }}</code></div>
+            </div>
+            <div class="col-md-5">
+              <textarea v-if="setting.value.length > 100" v-model="setting.value" class="form-control form-control-sm" rows="3"></textarea>
+              <input v-else v-model="setting.value" type="text" class="form-control form-control-sm">
+            </div>
+            <div class="col-md-3 text-md-end">
+              <button class="btn btn-primary btn-sm me-1" @click="saveSetting(setting)" :disabled="savingKey === setting.key">
+                <span v-if="savingKey === setting.key" class="spinner-border spinner-border-sm me-1"></span>
+                <i v-else class="bi bi-check-lg me-1"></i>Save
+              </button>
+              <button class="btn btn-outline-danger btn-sm" @click="deleteSetting(setting)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-footer d-flex justify-content-between align-items-center" v-if="total > perPage">
+        <span class="text-muted small">{{ total }} settings</span>
+        <div class="btn-group btn-group-sm">
+          <button class="btn btn-outline-secondary" :disabled="page === 0" @click="page--; loadSettings()">Prev</button>
+          <button class="btn btn-outline-secondary" :disabled="(page + 1) * perPage >= total" @click="page++; loadSettings()">Next</button>
+        </div>
+      </div>
+    </div>
+  </template>
+</div>

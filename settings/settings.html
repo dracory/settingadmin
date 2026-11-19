@@ -1,0 +1,52 @@
+<div id="app">
+  <!-- Loading state -->
+  <template v-if="loading">
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading settings...</span>
+      </div>
+    </div>
+  </template>
+
+  <!-- Fetch error state: shown instead of the form -->
+  <template v-else-if="error">
+    <div class="alert alert-danger d-flex justify-content-between align-items-center">
+      <span><i class="bi bi-exclamation-triangle me-2"></i>{{ error }}</span>
+      <button class="btn btn-outline-danger btn-sm" @click="loadSettings">
+        <i class="bi bi-arrow-clockwise me-1"></i>Retry
+      </button>
+    </div>
+  </template>
+
+  <!-- Empty schema -->
+  <template v-else-if="groups.length === 0">
+    <div class="alert alert-info">
+      No setting groups are configured. Use the raw manager to edit individual keys.
+    </div>
+  </template>
+
+  <!-- Group cards -->
+  <template v-else>
+    <div v-for="group in groups" :key="group.id" class="card mb-4" :id="'group-' + group.id">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+          <div class="fw-semibold">{{ group.title }}</div>
+          <div v-if="group.description" class="text-muted small">{{ group.description }}</div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span v-if="dirtyGroups[group.id]" class="text-danger small">Unsaved changes</span>
+          <button class="btn btn-sm" :class="dirtyGroups[group.id] ? 'btn-warning' : 'btn-primary'"
+            @click="saveGroup(group)" :disabled="savingGroup === group.id">
+            <span v-if="savingGroup === group.id" class="spinner-border spinner-border-sm me-1"></span>
+            <i v-else class="bi bi-check-lg me-1"></i>Save
+          </button>
+        </div>
+      </div>
+      <div class="card-body" :ref="'fields-' + group.id" @input="markDirty(group)" @change="markDirty(group)">
+        <template v-for="field in group.fields" :key="field.name">
+          <div v-html="field.html"></div>
+        </template>
+      </div>
+    </div>
+  </template>
+</div>

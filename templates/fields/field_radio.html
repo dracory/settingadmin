@@ -1,0 +1,16 @@
+<div class="mb-3 row">
+  <span class="col-sm-3 col-form-label fw-semibold">
+    {{.Field.Label}}{{if .Field.Required}} <span class="text-danger">*</span>{{end}}
+    <div class="text-muted small fw-normal"><code>{{.Field.Name}}</code></div>
+  </span>
+  <div class="col-sm-9 pt-2">
+    {{range .Field.Options}}
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="{{$.Field.Name}}" id="setting-{{$.Field.Name}}-{{.Value}}"
+        value="{{.Value}}" {{if eq .Value $.Value}}checked{{end}} {{if $.Field.Readonly}}disabled{{end}}>
+      <label class="form-check-label" for="setting-{{$.Field.Name}}-{{.Value}}">{{.Label}}</label>
+    </div>
+    {{end}}
+    {{if .Field.Help}}<div class="form-text">{{.Field.Help}}</div>{{end}}
+  </div>
+</div>

@@ -1,0 +1,104 @@
+package settings_test
+
+import (
+	"bytes"
+	"encoding/json"
+	"log/slog"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
+
+	"github.com/dracory/settingadmin"
+	"github.com/dracory/settingadmin/settings"
+	"github.com/dracory/settingadmin/shared"
+	"github.com/dracory/settingadmin/testutils"
+	"github.com/dracory/settingstore"
+
+	_ "modernc.org/sqlite"
+)
+
+// testEnv bundles a settings controller UI backed by an in-memory
+// SQLite settingstore, ready to serve HTTP requests in a test.
+type testEnv struct {
+	ui    settings.UiInterface
+	store settingstore.StoreInterface
+}
+
+// testGroups is the schema used across settings controller tests.
+var testGroups = []shared.SettingGroup{
+	{
+		ID:    "general",
+		Title: "General",
+		Fields: []shared.Field{
+			{Name: "site.name", Label: "Site Name", Type: settingadmin.FIELD_TYPE_INPUT, DefaultValue: "Default"},
+			{Name: "site.maintenance", Label: "Maintenance", Type: settingadmin.FIELD_TYPE_CHECKBOX},
+		},
+	},
+}
+
+// newTestEnv boots an in-memory SQLite settingstore and a settings
+// controller UI.
+func newTestEnv(t *testing.T) *testEnv {
+	t.Helper()
+
+	store, err := testutils.InitStore(":memory:")
+	if err != nil {
+		t.Fatalf("init store: %v", err)
+	}
+
+	registry, err := settingadmin.NewFieldRegistry(nil)
+	if err != nil {
+		t.Fatalf("field registry: %v", err)
+	}
+
+	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
+
+	ui := settings.UI(shared.UiConfig{
+		Store:  store,
+		Logger: logger,
+		Groups: testGroups,
+		Fields: registry,
+		Layout: func(w http.ResponseWriter, r *http.Request, webpageTitle, webpageHtml string, options struct {
+			Styles     []string
+			StyleURLs  []string
+			Scripts    []string
+			ScriptURLs []string
+		}) string {
+			return "<html><head><title>" + webpageTitle + "</title></head><body>" + webpageHtml + "</body></html>"
+		},
+	})
+
+	return &testEnv{ui: ui, store: store}
+}
+
+type apiResponse struct {
+	Status  string         `json:"status"`
+	Message string         `json:"message"`
+	Data    map[string]any `json:"data"`
+}
+
+// postAction builds a POST request to the controller with the given
+// action and JSON body, executes it, and returns the decoded envelope.
+func postAction(t *testing.T, env *testEnv, action string, payload any) apiResponse {
+	t.Helper()
+
+	target := "/admin/settings?controller=settings&action=" + action
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		t.Fatalf("marshal payload: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodPost, target, bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	rec := httptest.NewRecorder()
+	env.ui.Settings(rec, req)
+
+	var resp apiResponse
+	if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("unmarshal response: %v (body=%q)", err, rec.Body.String())
+	}
+	return resp
+}

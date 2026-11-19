@@ -1,0 +1,12 @@
+<div class="mb-3 row">
+  <label for="setting-{{.Field.Name}}" class="col-sm-3 col-form-label fw-semibold">
+    {{.Field.Label}}{{if .Field.Required}} <span class="text-danger">*</span>{{end}}
+    <div class="text-muted small fw-normal"><code>{{.Field.Name}}</code></div>
+  </label>
+  <div class="col-sm-9">
+    <input type="date" class="form-control" id="setting-{{.Field.Name}}" name="{{.Field.Name}}"
+      value="{{.Value}}" placeholder="{{.Field.Placeholder}}"
+      {{if .Field.Readonly}}readonly{{end}} {{if .Field.Required}}required{{end}}>
+    {{if .Field.Help}}<div class="form-text">{{.Field.Help}}</div>{{end}}
+  </div>
+</div>

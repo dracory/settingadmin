@@ -1,0 +1,15 @@
+<div class="mb-3 row">
+  <span class="col-sm-3 col-form-label fw-semibold">
+    {{.Field.Label}}
+    <div class="text-muted small fw-normal"><code>{{.Field.Name}}</code></div>
+  </span>
+  <div class="col-sm-9 pt-2">
+    <div class="form-check form-switch">
+      <input class="form-check-input" type="checkbox" role="switch" id="setting-{{.Field.Name}}"
+        name="{{.Field.Name}}" value="true" {{if eq .Value "true"}}checked{{end}}
+        {{if .Field.Readonly}}disabled{{end}}>
+      <label class="form-check-label" for="setting-{{.Field.Name}}">{{.Field.Placeholder}}</label>
+    </div>
+    {{if .Field.Help}}<div class="form-text">{{.Field.Help}}</div>{{end}}
+  </div>
+</div>
