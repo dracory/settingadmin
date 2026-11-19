@@ -17,6 +17,16 @@ following the same architecture as `shopadmin`/`logadmin`/`blogadmin`
 - **Template overrides** — `AdminOptions.FieldTemplates` lets the host
   app override existing types or register new ones.
 
+## Screenshots
+
+**Grouped editor** (`?controller=settings`) — schema-driven cards, per-group Save, unsaved-changes indicator:
+
+![Grouped settings editor](docs/screenshots/settings-editor.png)
+
+**Raw manager** (`?controller=manager`) — key/value table with filter, add, save, delete:
+
+![Raw settings manager](docs/screenshots/settings-manager.png)
+
 ## Quick start
 
 ```bash
